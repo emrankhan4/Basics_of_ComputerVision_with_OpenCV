@@ -1,3 +1,5 @@
+import cv2 as cv
+
 from userlib import *
 # imgshowhist('images')
 
@@ -20,3 +22,4 @@ from userlib import *
 # cv.equalizeHist(img1,img1)
 # cv.imshow(img1)
 # cv.waitKey(0)
+imgthresholdgaussian('images','gausthres')
