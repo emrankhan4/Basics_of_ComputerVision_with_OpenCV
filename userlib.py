@@ -3,6 +3,12 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+def __imgview(img, watchTime):
+    # img=imgresize(img)
+    cv.imshow('window', img)
+    delay = int(watchTime * 1000)
+    cv.waitKey(delay)
+
 def __imgThresholdApadtiveMean(img,maxval=255,blocksize=3,c=3,thresbinary=True):
     bin = cv.THRESH_BINARY_INV
     if thresbinary:
@@ -92,6 +98,8 @@ def imgclache(img):
     clahe = cv.createCLAHE(clipLimit=5)
     img = clahe.apply(img)
     return img
+
+
 def imghisequalizer(src,des):
     imagefolders = os.listdir(src)
     noofclass = 0
@@ -130,20 +138,8 @@ def imgshow(rootfolder):
             location = rootfolder + '/' + folder + '/' + image
             img = cv.imread(location)
             watchTimeinSeconds = .3
-            imgview(img, watchTimeinSeconds)
+            __imgview(img, watchTimeinSeconds)
     print("Number of class: ", noofclass)
-
-
-
-
-def imgview(img, watchTime):
-    # img=imgresize(img)
-    cv.imshow('window', img)
-    delay = int(watchTime * 1000)
-    cv.waitKey(delay)
-
-
-
 
 def imgblur(src, des):
     imagefolders = os.listdir(src)
@@ -169,7 +165,6 @@ def imgblur(src, des):
             except:
                 pass
             cv.imwrite(destination, img)
-
 
 def imgresize(src, des,x=512,y=512,maintainratio=False):
     def resize(img,x):
