@@ -3,36 +3,44 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-def imgClahe(img):
+def __imgThresholdApadtiveMean(img,maxval=255,blocksize=3,c=3,thresbinary=True):
+    bin = cv.THRESH_BINARY_INV
+    if thresbinary:
+        bin = cv.THRESH_BINARY
     if img.ndim != 2:
-        img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    clahe = cv.createCLAHE(clipLimit=5)
-    img = clahe.apply(img)
-    return img
+        img = cv.cvtColor(img, cv.COLOR_BGRA2GRAY)
+    adaptive_thresh_mean = cv.adaptiveThreshold(img, maxval, cv.ADAPTIVE_THRESH_MEAN_C, bin, blocksize, c)
+    return adaptive_thresh_mean
 
-def imgNormalEqualizer(img):
+
+def __imgThresholdApadtiveGauss(img,maxval=255,blocksize=3,c=3,thresbinary=True):
+    bin = cv.THRESH_BINARY_INV
+    if thresbinary:
+        bin = cv.THRESH_BINARY
+    if img.ndim != 2:
+        img = cv.cvtColor(img, cv.COLOR_BGRA2GRAY)
+    adaptive_thresh_gauss = cv.adaptiveThreshold(img, maxval, cv.ADAPTIVE_THRESH_GAUSSIAN_C, bin, blocksize, c)
+    return adaptive_thresh_gauss
+
+
+def __imgThresholdGlobal(img,thres=150,maxval=255,thresbinary=True):
+    bin = cv.THRESH_BINARY_INV
+
+    if thresbinary:
+        bin = cv.THRESH_BINARY
+    if img.ndim != 2:
+        img = cv.cvtColor(img, cv.COLOR_BGRA2GRAY)
+    threshold, thresh = cv.threshold(img, thres, maxval, bin)
+    return thresh
+
+def __imgnormalequalizer(img):
     if img.ndim != 2:
         img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     img = cv.equalizeHist(img)
     return img
 
-def imgshow(rootfolder):
-    imagefolders = os.listdir(rootfolder)
-    noofclass = 0
 
-    for folder in imagefolders:
-        loc = rootfolder + "/" + folder
-        noofclass = len(imagefolders)
-        files = os.listdir(loc)
-
-        for image in files:
-            location = rootfolder + '/' + folder + '/' + image
-            img = cv.imread(location)
-            watchTimeinSeconds = .3
-            imgview(img, watchTimeinSeconds)
-    print("Number of class: ", noofclass)
-
-def augmentation(img):
+def __augmentation(img):
     def rotate_image(image):
         rotated = cv.rotate(image, cv.ROTATE_180)
         return rotated
@@ -48,38 +56,10 @@ def augmentation(img):
         gauss = np.random.normal(mean, sigma, (row, col, ch))
         noisy = image + gauss
         return np.clip(noisy, 0, 255).astype(np.uint8)
-
-    return rotate_image(img), flip_image(img), add_noise(img)
-
-
-def __imgThresholdApadtiveMean(img):
-    if img.ndim != 2:
-        img = cv.cvtColor(img, cv.COLOR_BGRA2GRAY)
-    adaptive_thresh_mean = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 3, 3)
-    return adaptive_thresh_mean
-
-
-def __imgThresholdApadtiveGauss(img):
-    if img.ndim != 2:
-        img = cv.cvtColor(img, cv.COLOR_BGRA2GRAY)
-    adaptive_thresh_gauss = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 3, 3)
-    return adaptive_thresh_gauss
-
-def test(img):
-    return __imgThresholdApadtiveGauss(img)
-
-def __imgThresholdGlobal(img):
-    if img.ndim != 2:
-        img = cv.cvtColor(img, cv.COLOR_BGRA2GRAY)
-    threshold, thresh = cv.threshold(img, 150, 255, cv.THRESH_BINARY)
-    return thresh
-
-
-def imgview(img, watchTime):
-    # img=imgresize(img)
-    cv.imshow('window', img)
-    delay = int(watchTime * 1000)
-    cv.waitKey(delay)
+    rot = rotate_image(img)
+    flp = flip_image(img)
+    ns = add_noise(img)
+    return [rot,flp,ns]
 
 
 def __imghist(img):
@@ -105,6 +85,64 @@ def __imghist(img):
             plt.plot(hist, color=col)
             plt.xlim([0, 256])
         plt.show()
+
+def imgclache(img):
+    if img.ndim != 2:
+        img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    clahe = cv.createCLAHE(clipLimit=5)
+    img = clahe.apply(img)
+    return img
+def imghisequalizer(src,des):
+    imagefolders = os.listdir(src)
+    noofclass = 0
+
+    for folder in imagefolders:
+        loc = src + "/" + folder
+        noofclass = len(imagefolders)
+        files = os.listdir(loc)
+        ff = True
+        for image in files:
+            location = src + '/' + folder + '/' + image
+            img = cv.imread(location)
+            img = __imgnormalequalizer(img)
+            destination = des + '/' + folder + '/' + image
+
+            try:
+                os.mkdir(des)
+            except:
+                pass
+            try:
+                os.mkdir(des + '/' + folder)
+            except:
+                pass
+            cv.imwrite(destination, img)
+
+def imgshow(rootfolder):
+    imagefolders = os.listdir(rootfolder)
+    noofclass = 0
+
+    for folder in imagefolders:
+        loc = rootfolder + "/" + folder
+        noofclass = len(imagefolders)
+        files = os.listdir(loc)
+
+        for image in files:
+            location = rootfolder + '/' + folder + '/' + image
+            img = cv.imread(location)
+            watchTimeinSeconds = .3
+            imgview(img, watchTimeinSeconds)
+    print("Number of class: ", noofclass)
+
+
+
+
+def imgview(img, watchTime):
+    # img=imgresize(img)
+    cv.imshow('window', img)
+    delay = int(watchTime * 1000)
+    cv.waitKey(delay)
+
+
 
 
 def imgblur(src, des):
@@ -133,29 +171,56 @@ def imgblur(src, des):
             cv.imwrite(destination, img)
 
 
-def imgresize(src, des):
-    imagefolders = os.listdir(src)
-    noofclass = 0
-    for folder in imagefolders:
-        loc = src + "/" + folder
-        noofclass = len(imagefolders)
-        files = os.listdir(loc)
-        ff = True
-        for image in files:
-            location = src + '/' + folder + '/' + image
-            img = cv.imread(location)
-            img = cv.resize(img, (512, 512))
-            destination = des + '/' + folder + '/' + image
-            try:
-                os.mkdir(des)
-            except:
-                pass
-            try:
-                os.mkdir(des + '/' + folder)
-            except:
-                pass
-            cv.imwrite(destination, img)
-def imgthresholdglobal(src,des):
+def imgresize(src, des,x=512,y=512,maintainratio=False):
+    def resize(img,x):
+        while img.shape[0]>x:
+            img=cv.resize(img,(0,0),fx=.8,fy=.8)
+        return img
+    if maintainratio==False:
+        imagefolders = os.listdir(src)
+        noofclass = 0
+        for folder in imagefolders:
+            loc = src + "/" + folder
+            noofclass = len(imagefolders)
+            files = os.listdir(loc)
+            ff = True
+            for image in files:
+                location = src + '/' + folder + '/' + image
+                img = cv.imread(location)
+                img = cv.resize(img, (x, y))
+                destination = des + '/' + folder + '/' + image
+                try:
+                    os.mkdir(des)
+                except:
+                    pass
+                try:
+                    os.mkdir(des + '/' + folder)
+                except:
+                    pass
+                cv.imwrite(destination, img)
+    else:
+        imagefolders = os.listdir(src)
+        noofclass = 0
+        for folder in imagefolders:
+            loc = src + "/" + folder
+            noofclass = len(imagefolders)
+            files = os.listdir(loc)
+            ff = True
+            for image in files:
+                location = src + '/' + folder + '/' + image
+                img = cv.imread(location)
+                img = resize(img,x)
+                destination = des + '/' + folder + '/' + image
+                try:
+                    os.mkdir(des)
+                except:
+                    pass
+                try:
+                    os.mkdir(des + '/' + folder)
+                except:
+                    pass
+                cv.imwrite(destination, img)
+def imgthresholdglobal(src,des,thres=150,maxval=255,thresbin=True):
     imagefolders = os.listdir(src)
     noofclass=0
     for folder in imagefolders:
@@ -221,7 +286,7 @@ def imgthresholdmean(src,des):
             except:
                 pass
             cv.imwrite(destination,img)
-def imgconvtoGray(src, des):
+def imgconvtogray(src, des):
     imagefolders = os.listdir(src)
     noofclass = 0
     for folder in imagefolders:
@@ -267,19 +332,47 @@ def imgEdgeDetect(src, des):
             except:
                 pass
             cv.imwrite(destination, img)
-
-
-def imgshowhist(rootfolder):
-    imagefolders = os.listdir(rootfolder)
+def imgAugment(src, des):
+    imagefolders = os.listdir(src)
     noofclass = 0
-
     for folder in imagefolders:
-        loc = rootfolder + "/" + folder
+        loc = src + "/" + folder
         noofclass = len(imagefolders)
         files = os.listdir(loc)
-
+        ff = True
         for image in files:
-            location = rootfolder + '/' + folder + '/' + image
+            location = src + '/' + folder + '/' + image
             img = cv.imread(location)
-            __imghist(img)
-    print("Number of class: ", noofclass)
+            img = __augmentation(img)
+            destination1 = des + '/' + folder + '/' + '1'+image
+            destination2 = des + '/' + folder + '/' + '2'+image
+            destination3 = des + '/' + folder + '/' + '3'+image
+            try:
+                os.mkdir(des)
+            except:
+                pass
+            try:
+                os.mkdir(des + '/' + folder)
+            except:
+                pass
+            cv.imwrite(destination1, img[0])
+            cv.imwrite(destination2, img[1])
+            cv.imwrite(destination3, img[2])
+
+
+
+
+# def imgshowhist(rootfolder):
+#     imagefolders = os.listdir(rootfolder)
+#     noofclass = 0
+#
+#     for folder in imagefolders:
+#         loc = rootfolder + "/" + folder
+#         noofclass = len(imagefolders)
+#         files = os.listdir(loc)
+#
+#         for image in files:
+#             location = rootfolder + '/' + folder + '/' + image
+#             img = cv.imread(location)
+#             __imghist(img)
+#     print("Number of class: ", noofclass)
