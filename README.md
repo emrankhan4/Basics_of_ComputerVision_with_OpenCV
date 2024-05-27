@@ -9,9 +9,6 @@ This repository contains code examples and tutorials for learning the basics of 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Examples](#examples)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Introduction
 
 Computer vision is a field of study that deals with enabling computers to interpret and understand digital images and videos. It has numerous applications in various domains, such as object detection, facial recognition, augmented reality, and autonomous vehicles. This repository aims to provide a gentle introduction to computer vision concepts and techniques using OpenCV.
