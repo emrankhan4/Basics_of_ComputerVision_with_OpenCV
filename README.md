@@ -26,18 +26,19 @@ Before you begin, ensure that you have the following prerequisites installed:
 
 ```bash
 git clone https://github.com/emrankhan4/Basics_of_ComputerVision_with_OpenCV.git
+```
 
 
-
-Install the required Python packages:
+2. Install the required Python packages:
+```bash
 pip install opencv-python
 
+```
 
-
-Usage
+## Usage
 Each example in this repository is contained within a separate Python file or Jupyter Notebook. You can run the examples by executing the corresponding Python file or opening the Jupyter Notebook.
 
-Examples
+## Examples
 Here are some of the examples included in this repository:
 
 image_basics.py: This example demonstrates how to load, display, and perform basic operations on images using OpenCV.
